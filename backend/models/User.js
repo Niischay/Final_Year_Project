@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 const userSchema = new mongoose.Schema({
   role: {
     type: String,
@@ -27,10 +26,6 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
-  name: {
-    type: String,
-    required: true,
-  },
   registeredLocation: {
     latitude: Number,
     longitude: Number,
@@ -40,3 +35,5 @@ const userSchema = new mongoose.Schema({
     default: [],
   }
 }, { timestamps: true });
+
+module.exports = mongoose.model('User', userSchema);
