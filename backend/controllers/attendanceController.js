@@ -1,6 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const Session = require("../models/Session");
+const Attendance = require("../models/Attendance");
+
 
 // ✅ Register user (student or teacher)
 exports.registerUser = async (req, res) => {
@@ -69,5 +72,48 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     console.error('❌ Login Error:', error);
     res.status(500).json({ message: 'Server error during login' });
+  }
+};
+
+// ✅ Mark attendance when student scans QR
+exports.markAttendance = async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    // Verify student
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const studentId = decoded.id;
+
+    // Check if session exists
+    const session = await Session.findOne({ sessionId });
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    // Prevent double marking
+    const alreadyMarked = await Attendance.findOne({ user: studentId, sessionId });
+    if (alreadyMarked) {
+      return res.status(400).json({ message: "Attendance already marked" });
+    }
+
+    // Save attendance as PRESENT
+    const newAttendance = new Attendance({
+      user: studentId,
+      className: session.className,
+      subjectName: session.subjectName,
+      sessionId,
+    });
+
+    await newAttendance.save();
+
+    res.status(201).json({ message: "Attendance marked successfully" });
+  } catch (error) {
+    console.error("❌ Mark Attendance Error:", error);
+    res.status(500).json({ message: "Server error marking attendance" });
   }
 };
