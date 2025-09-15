@@ -4,7 +4,11 @@ const sessionSchema = new mongoose.Schema({
   className: { type: String, required: true },
   subjectName: { type: String, required: true },
   sessionId: { type: String, required: true, unique: true },
-  createdAt: { type: Date, default: Date.now, expires: "1h" }
+  teacherLocation: {     
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true }
+  },
+  createdAt: { type: Date, default: Date.now, expires: 300 }
 });
 
 module.exports = mongoose.model("Session", sessionSchema);

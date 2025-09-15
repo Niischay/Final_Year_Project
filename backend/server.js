@@ -16,11 +16,15 @@ app.get("/", (req, res) => {
   res.send("QR Attendance Backend Running");
 });
 
+// Route Imports
+const authRoutes = require('./routes/authRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const qrRoutes = require('./routes/qrRoutes');
+
+// Route Mounting
+app.use('/api/auth', authRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/qr', qrRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-const authRoutes = require('./routes/attendanceRoutes');
-app.use('/api/attendance', authRoutes);
-
-const qrRoutes = require("./routes/qrRoutes");
-app.use("/api/qr", qrRoutes);

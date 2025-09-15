@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, markAttendance } = require('../controllers/attendanceController');
+const { markAttendance } = require('../controllers/attendanceController');
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
+// Student marks attendance by scanning QR
 router.post("/mark", markAttendance);
 
 module.exports = router;
