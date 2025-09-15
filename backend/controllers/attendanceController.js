@@ -73,3 +73,78 @@ exports.markAttendance = async (req, res) => {
     res.status(500).json({ message: "Server error marking attendance" });
   }
 };
+
+exports.getFlaggedAttendances = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const flaggedRecords = await Attendance.find({
+      sessionId,
+      flagged: true
+    }).populate('user', 'registerNumber email role');  // Pull student info
+
+    res.status(200).json({
+      message: "Flagged attendances fetched successfully",
+      flaggedAttendances: flaggedRecords
+    });
+  } catch (error) {
+    console.error("❌ Get Flagged Attendance Error:", error);
+    res.status(500).json({ message: "Server error fetching flagged attendance" });
+  }
+};
+
+const ExcelJS = require("exceljs");
+
+exports.exportFlaggedAttendances = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const session = await Session.findOne({ sessionId });
+    if (!session) return res.status(404).json({ message: "Session not found" });
+
+    const flaggedRecords = await Attendance.find({
+      sessionId,
+      flagged: true
+    }).populate('user', 'registerNumber');
+
+    if (!flaggedRecords.length) {
+      return res.status(404).json({ message: "No flagged attendances found" });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Flagged Attendance');
+
+    // Dynamic metadata
+    const sessionDate = session.createdAt.toLocaleDateString();
+    const periodNumber = session.periodNumber || 'N/A';  // Make sure you store this in session when created
+
+    worksheet.addRow(['Date', sessionDate]);
+    worksheet.addRow(['Period Number', periodNumber]);
+    worksheet.addRow(['Subject', session.subjectName]);
+    worksheet.addRow([]);  // Blank row
+
+    // Header row
+    worksheet.addRow(['Register Number']);
+
+    // Add flagged students dynamically
+    flaggedRecords.forEach(record => {
+      worksheet.addRow([record.user.registerNumber]);
+    });
+
+    // Set headers for file download
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=flagged_attendance_${sessionId}.xlsx`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("❌ Export Excel Error:", error);
+    res.status(500).json({ message: "Server error exporting flagged attendances" });
+  }
+};

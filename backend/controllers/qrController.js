@@ -4,10 +4,10 @@ const Session = require("../models/Session");
 
 exports.createSession = async (req, res) => {
   try {
-    const { className, subjectName, teacherLocation } = req.body;
+    const { className, subjectName, teacherLocation, periodNumber } = req.body;
 
     if (!className || !subjectName || !teacherLocation) {
-      return res.status(400).json({ message: "className, subjectName and teacherLocation are required" });
+      return res.status(400).json({ message: "className, subjectName, teacherLocation and periodNumber are required" });
     }
 
     // Generate unique sessionId
@@ -18,7 +18,8 @@ exports.createSession = async (req, res) => {
       className, 
       subjectName, 
       sessionId,
-      teacherLocation
+      teacherLocation,
+      periodNumber
      });
     await newSession.save();
 
