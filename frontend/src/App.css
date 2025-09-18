@@ -1,38 +1,236 @@
+/* App.css */
+
+/* ===== APP CONTAINER ===== */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ===== HEADER ===== */
+.header {
+  background-color: white;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  /* Removed shadow for a cleaner, flatter look */
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.25rem; /* Slightly reduced for a more refined look */
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.header button {
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--gray-300);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.header button:hover {
+  background: var(--error);
   color: white;
+  border-color: var(--error);
+  transform: translateY(-1px);
 }
 
-.App-link {
-  color: #61dafb;
+/* ===== PAGE CONTAINER ===== */
+.page-container {
+  padding: 2.5rem; /* Increased padding */
+  max-width: 900px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  flex: 1;
+  border: 1px solid var(--gray-200);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.page-container h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: var(--gray-900);
+}
+
+/* ===== LOGIN FORM ===== */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+.login-form {
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 2rem;
+  color: var(--gray-900);
+  font-weight: 700;
+}
+
+/* Modern Segmented Control */
+.role-selector {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 2rem;
+  background: var(--gray-100);
+  padding: 0.375rem;
+  border-radius: var(--radius);
+}
+
+.role-selector label {
+  cursor: pointer;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-sm);
+  flex: 1;
+  text-align: center;
+  transition: var(--transition);
+  color: var(--gray-600);
+  font-weight: 500;
+}
+
+.role-selector input[type="radio"] {
+  display: none;
+}
+
+.role-selector input[type="radio"]:checked + span {
+  background: white;
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.875rem 1rem; /* Increased padding */
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  box-sizing: border-box;
+  font-size: 1rem;
+  transition: var(--transition);
+  background-color: var(--gray-50);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background-color: white;
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Primary Button Style */
+.login-form button {
+  width: 100%;
+  padding: 0.875rem;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.login-form button:disabled {
+  background-color: var(--gray-200);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.login-form button:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Refined Error/Alert Message Style */
+.error-message {
+  color: var(--error);
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  background-color: hsl(0, 84%, 97%);
+  border-radius: var(--radius);
+  border: 1px solid hsl(0, 84%, 90%);
+}
+
+.end-session-button {
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  display: block;
+  padding: 0.875rem;
+  background-color: var(--gray-700); /* Changed from error to neutral */
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.end-session-button:disabled {
+  background-color: var(--gray-200);
+  color: var(--gray-500);
+  cursor: not-allowed;
+}
+
+.end-session-button:hover:not(:disabled) {
+  background-color: var(--error); /* On hover, it becomes red for intent */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 1rem;
+    padding: 1.5rem;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .header {
+    padding: 1rem;
+  }
+  
+  .login-form {
+    padding: 2rem 1.5rem;
   }
 }

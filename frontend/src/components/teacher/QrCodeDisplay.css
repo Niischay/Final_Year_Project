@@ -1,0 +1,70 @@
+/* QrCodeDisplay.css */
+
+.qr-display-container {
+  margin-top: 2rem;
+  padding: 2rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  background-color: white;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.qr-image {
+  max-width: 280px;
+  height: auto;
+  margin: 1.5rem auto;
+  display: block;
+  border: 1px solid var(--gray-200); /* Thinner border */
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  background-color: white;
+  padding: 1rem; /* Padding to frame the QR code */
+}
+
+.session-id {
+  font-family: 'Fira Code', 'Source Code Pro', monospace;
+  font-weight: 500;
+  color: var(--gray-700);
+  word-break: break-all;
+  background: var(--gray-100);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  margin: 1rem 0;
+  border: 1px solid var(--gray-200);
+}
+
+/* Standardized Message/Alert Boxes */
+.warning, .session-ended-msg {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border-left-width: 4px;
+  border-style: solid;
+}
+
+.warning {
+  color: hsl(38, 92%, 25%);
+  background-color: hsl(38, 92%, 96%);
+  border-color: var(--warning);
+}
+
+.session-ended-msg {
+  color: hsl(210, 87%, 35%);
+  background-color: hsl(210, 87%, 96%);
+  border-color: var(--info);
+  font-weight: 600;
+}
+
+.qr-display-container.inactive {
+  background-color: var(--gray-50);
+  border-color: var(--gray-200);
+}
+
+.qr-display-container.inactive .qr-image {
+  opacity: 0.5;
+  filter: grayscale(80%);
+}

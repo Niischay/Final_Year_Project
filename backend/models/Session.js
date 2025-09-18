@@ -9,6 +9,10 @@ const sessionSchema = new mongoose.Schema({
     latitude: { type: Number, required: true },
     longitude: { type: Number, required: true }
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   createdAt: { type: Date, default: Date.now, expires: 300 }
 });
 

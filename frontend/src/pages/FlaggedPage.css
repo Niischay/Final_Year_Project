@@ -1,0 +1,115 @@
+/* FlaggedPage.css */
+
+.session-id-display {
+  font-family: 'Fira Code', 'Source Code Pro', monospace;
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  background: var(--gray-100);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  display: inline-block;
+  margin-bottom: 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--primary); /* Changed to primary action color */
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius);
+  margin: 1.5rem 0;
+  transition: var(--transition);
+  border: none;
+  cursor: pointer;
+}
+
+.export-button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Modernized Table */
+.flagged-table {
+  width: 100%;
+  border-collapse: collapse; /* Changed for cleaner lines */
+  margin-top: 1.5rem;
+  background-color: white;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--gray-200);
+}
+
+.flagged-table th,
+.flagged-table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.flagged-table th {
+  background-color: var(--gray-50);
+  font-weight: 600;
+  color: var(--gray-600);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.flagged-table tbody tr {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.flagged-table tbody tr:hover {
+  background-color: var(--primary-light);
+}
+
+.flagged-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.approve-button {
+  background-color: var(--success);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: var(--transition);
+}
+
+.approve-button:hover {
+  background-color: hsl(145, 63%, 38%);
+  transform: translateY(-1px);
+}
+
+/* Standardized Messages */
+.success-message, .error-message {
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-top: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.success-message {
+  background-color: hsl(145, 75%, 96%);
+  color: hsl(145, 63%, 30%);
+  border: 1px solid hsl(145, 75%, 88%);
+}
+
+.error-message {
+  background-color: hsl(0, 84%, 97%);
+  color: hsl(0, 84%, 40%);
+  border: 1px solid hsl(0, 84%, 90%);
+}

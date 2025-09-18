@@ -19,7 +19,8 @@ exports.createSession = async (req, res) => {
       subjectName, 
       sessionId,
       teacherLocation,
-      periodNumber
+      periodNumber,
+      isActive: true
      });
     await newSession.save();
 
@@ -36,5 +37,27 @@ exports.createSession = async (req, res) => {
   } catch (error) {
     console.error("❌ QR Session Error:", error);
     res.status(500).json({ message: "Error creating QR session" });
+  }
+};
+
+exports.endSession = async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const session = await Session.findOne({ sessionId });
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    session.isActive = false;
+    await session.save();
+
+    res.status(200).json({
+      message: "Session ended successfully",
+    });
+
+  } catch (error) {
+    console.error("❌ End Session Error:", error);
+    res.status(500).json({ message: "Error ending session" });
   }
 };

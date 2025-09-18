@@ -1,0 +1,62 @@
+/* StudentDashboard.css */
+
+.student-dashboard {
+  text-align: center;
+  padding: 2rem;
+}
+
+.scan-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--success);
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-lg);
+  margin-top: 2rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+  border: none;
+  cursor: pointer;
+}
+
+.scan-button:hover {
+  background-color: hsl(145, 63%, 38%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Modern Dashboard cards */
+.dashboard-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+  text-align: left;
+  border: 1px solid var(--gray-200);
+}
+
+.dashboard-card h3 {
+  margin-top: 0;
+  color: var(--gray-800);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .student-dashboard {
+    padding: 1rem;
+  }
+  
+  .scan-button {
+    width: 100%;
+    justify-content: center;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
