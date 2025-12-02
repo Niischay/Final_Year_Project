@@ -12,7 +12,7 @@ exports.registerUser = async (req, res) => {
     const newUser = new User({
       role,
       registerNumber: role === 'student' ? registerNumber : undefined,
-      email: role === 'teacher' ? email : undefined,
+      email: (role === 'teacher' || role === 'admin') ? email : undefined,
       password: hashedPassword,
     });
 
@@ -30,8 +30,14 @@ exports.loginUser = async (req, res) => {
   try {
     const { role, registerNumber, email, password } = req.body;
 
-    const user = await User.findOne(role === 'student' ? { registerNumber } : { email });
+    // Admin logs in with email, just like a teacher
+    const query = role === 'student' ? { registerNumber } : { email };
+    
+    const user = await User.findOne(query);
     if (!user) return res.status(400).json({ message: 'User not found' });
+
+    // Ensure the user is actually logging in with the correct role
+    if (user.role !== role) return res.status(400).json({ message: 'Role mismatch' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });

@@ -1,11 +1,23 @@
 const Attendance = require("../models/Attendance");
 const Session = require("../models/Session");
+const User = require("../models/User"); // Added User model
 const jwt = require("jsonwebtoken");
 const geolib = require("geolib");
 
+// Helper function to calculate Euclidean Distance
+const getEuclideanDistance = (face1, face2) => {
+  if (!face1 || !face2 || face1.length !== face2.length) return 1.0; // Return max distance if invalid
+  return Math.sqrt(
+    face1
+      .map((val, i) => Math.pow(val - face2[i], 2))
+      .reduce((sum, sq) => sum + sq, 0)
+  );
+};
+
 exports.markAttendance = async (req, res) => {
   try {
-    const { sessionId, location } = req.body;
+    // 1. Extract Data
+    const { sessionId, location, faceDescriptor } = req.body; // Added faceDescriptor
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
@@ -15,6 +27,33 @@ exports.markAttendance = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const studentId = decoded.id;
 
+    // 2. Face Verification Logic -----------------------------------------
+    // Fetch the student to get stored face data
+    const student = await User.findById(studentId);
+    
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    // Check if student has registered their face
+    if (!student.faceEncoding || student.faceEncoding.length === 0) {
+        return res.status(400).json({ message: "Face data not found. Please contact Admin to register your face." });
+    }
+
+    // Check if face data was sent from frontend
+    if (!faceDescriptor || faceDescriptor.length === 0) {
+        return res.status(400).json({ message: "No face detected. Please try again." });
+    }
+
+    // Compare faces
+    const distance = getEuclideanDistance(student.faceEncoding, Object.values(faceDescriptor));
+    
+    // Threshold: 0.5 is a good balance. Lower = stricter.
+    // > 0.6 usually means different people.
+    if (distance > 0.5) {
+        return res.status(401).json({ message: "Face verification failed. Identity mismatch." });
+    }
+    // --------------------------------------------------------------------
+
+    // 3. Existing Session & Location Logic
     const session = await Session.findOne({ sessionId });
     if (!session) return res.status(400).json({ message: "Session expired or not found" });
 
@@ -26,18 +65,18 @@ exports.markAttendance = async (req, res) => {
     const sessionAge = (now - session.createdAt) / 1000;
     if (sessionAge > 300) return res.status(400).json({ message: "Session expired" });
 
-    const distance = geolib.getDistance(
+    const distFromTeacher = geolib.getDistance(
       { latitude: location.latitude, longitude: location.longitude },
       { latitude: session.teacherLocation.latitude, longitude: session.teacherLocation.longitude }
     );
 
-    const locationValid = distance <= 50;  // within 20 meters
+    const locationValid = distFromTeacher <= 50;  // within 50 meters
 
     const alreadyMarked = await Attendance.findOne({ user: studentId, sessionId });
     if (alreadyMarked) return res.status(400).json({ message: "Attendance already marked" });
 
     if (!locationValid) {
-      // ⚠️ Don’t save as valid attendance, but flag for teacher review
+      // Flagged logic
       const flaggedAttendance = new Attendance({
         user: studentId,
         className: session.className,
@@ -45,17 +84,18 @@ exports.markAttendance = async (req, res) => {
         sessionId,
         location,
         locationValid: false,
-        flagged: true
+        flagged: true,
+        faceVerified: true // Add this if you added it to schema, otherwise ignore
       });
 
       await flaggedAttendance.save();
 
       return res.status(201).json({
-        message: "Location invalid — attendance flagged for teacher review"
+        message: "Face verified, but location invalid. Attendance flagged."
       });
     }
 
-    // Valid attendance → Save normally
+    // Valid attendance
     const newAttendance = new Attendance({
       user: studentId,
       className: session.className,
@@ -63,13 +103,14 @@ exports.markAttendance = async (req, res) => {
       sessionId,
       location,
       locationValid: true,
-      flagged: false
+      flagged: false,
+      faceVerified: true
     });
 
     await newAttendance.save();
 
     res.status(201).json({
-      message: "Attendance marked successfully"
+      message: "Attendance marked successfully! (Face & Location Verified)"
     });
 
   } catch (error) {
@@ -78,6 +119,7 @@ exports.markAttendance = async (req, res) => {
   }
 };
 
+// ... (Keep the rest of your exports: getFlaggedAttendances, exportFlaggedAttendances, approveAttendance)
 exports.getFlaggedAttendances = async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -85,7 +127,7 @@ exports.getFlaggedAttendances = async (req, res) => {
     const flaggedRecords = await Attendance.find({
       sessionId,
       flagged: true
-    }).populate('user', 'registerNumber email role');  // Pull student info
+    }).populate('user', 'registerNumber email role'); 
 
     res.status(200).json({
       message: "Flagged attendances fetched successfully",
@@ -120,12 +162,12 @@ exports.exportFlaggedAttendances = async (req, res) => {
 
     // Dynamic metadata
     const sessionDate = session.createdAt.toLocaleDateString();
-    const periodNumber = session.periodNumber || 'N/A';  // Make sure you store this in session when created
+    const periodNumber = session.periodNumber || 'N/A'; 
 
     worksheet.addRow(['Date', sessionDate]);
     worksheet.addRow(['Period Number', periodNumber]);
     worksheet.addRow(['Subject', session.subjectName]);
-    worksheet.addRow([]);  // Blank row
+    worksheet.addRow([]); // Blank row
 
     // Header row
     worksheet.addRow(['Register Number']);
@@ -135,7 +177,6 @@ exports.exportFlaggedAttendances = async (req, res) => {
       worksheet.addRow([record.user.registerNumber]);
     });
 
-    // Set headers for file download
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -163,9 +204,8 @@ exports.approveAttendance = async (req, res) => {
       return res.status(404).json({ message: "Attendance record not found" });
     }
 
-    // This is the core logic: un-flag it and mark it as valid.
     attendanceRecord.flagged = false;
-    attendanceRecord.locationValid = true; // Manually overriding
+    attendanceRecord.locationValid = true; 
     
     await attendanceRecord.save();
 
