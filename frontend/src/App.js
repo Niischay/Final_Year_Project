@@ -15,6 +15,7 @@ import TeacherDashboard from './pages/TeacherDashboard';
 import StudentDashboard from './pages/StudentDashboard'; 
 import ScanPage from './pages/ScanPage'; 
 import FlaggedPage from './pages/FlaggedPage';
+import AdminDashboard from './pages/AdminDashboard';
 
 // Import Common Components
 import Header from './components/common/Header'; 
@@ -32,6 +33,13 @@ const NotFoundPage = () => <div className="page-container"><h2>404 - Page Not Fo
 function App() {
   const { isAuthenticated, user } = useAuth();
 
+  const getHomeRoute = () => {
+    if (!user) return '/login';
+    if (user.role === 'admin') return '/admin-dashboard';
+    if (user.role === 'teacher') return '/teacher-dashboard';
+    return '/student-dashboard';
+  };
+
   return (
     <Router>
       <div className="App">
@@ -42,39 +50,41 @@ function App() {
           <Route 
             path="/login" 
             element={
-              !isAuthenticated ? <LoginPage /> : <Navigate to={user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard'} />
+              !isAuthenticated ? <LoginPage /> : <Navigate to={getHomeRoute()} />
             } 
           />
 
-          {/* ----- Protected Routes ----- */}
-          {/* Student Routes */}
+          {/* Protected Routes */}
           <Route 
             path="/student-dashboard" 
-            element={isAuthenticated ? <StudentDashboard /> : <Navigate to="/login" />} 
+            element={isAuthenticated && user.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/scan" 
-            element={isAuthenticated ? <ScanPage /> : <Navigate to="/login" />} 
+            element={isAuthenticated && user.role === 'student' ? <ScanPage /> : <Navigate to="/login" />} 
           />
           
-          {/* Teacher Routes */}
           <Route 
             path="/teacher-dashboard" 
-            element={isAuthenticated ? <TeacherDashboard /> : <Navigate to="/login" />} 
+            element={isAuthenticated && user.role === 'teacher' ? <TeacherDashboard /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/flagged/:sessionId" 
-            element={isAuthenticated ? <FlaggedPage /> : <Navigate to="/login" />} 
+            element={isAuthenticated && user.role === 'teacher' ? <FlaggedPage /> : <Navigate to="/login" />} 
           />
 
-          {/* Catch-all Routes */}
+          {/* New Admin Route */}
+          <Route 
+            path="/admin-dashboard" 
+            element={isAuthenticated && user.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} 
+          />
+
+          {/* Catch-all */}
           <Route 
             path="/" 
-            element={
-              !isAuthenticated ? <Navigate to="/login" /> : <Navigate to={user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard'} />
-            }
+            element={<Navigate to={getHomeRoute()} />}
           />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Navigate to="/" />} />
 
         </Routes>
       </div>

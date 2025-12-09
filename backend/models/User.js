@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['student', 'teacher'],
+    enum: ['student', 'teacher', 'admin'], // Added 'admin'
     required: true,
   },
   registerNumber: {
@@ -21,7 +21,8 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: function () {
-      return this.role === 'teacher';
+      // Email is required for teachers AND admins
+      return this.role === 'teacher' || this.role === 'admin';
     },
     unique: true,
     sparse: true,

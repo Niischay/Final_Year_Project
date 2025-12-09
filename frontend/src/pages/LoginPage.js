@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api/authService';
 import useAuth from '../hooks/useAuth';
-import '../App.css'; // We'll add styles here
+import '../App.css'; 
 
 const LoginPage = () => {
   const [role, setRole] = useState('student');
@@ -12,8 +12,8 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth(); // Get the login function from our context
-  const navigate = useNavigate(); // Hook for redirecting
+  const { login } = useAuth(); 
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +21,7 @@ const LoginPage = () => {
     setError('');
 
     // Prepare credentials based on role
+    // If role is 'student', use registerNumber. For 'teacher' OR 'admin', use email.
     const credentials = {
       role,
       password,
@@ -28,14 +29,14 @@ const LoginPage = () => {
     };
 
     try {
-      // Call the API service
       const data = await loginUser(credentials);
       
-      // Use the login function from AuthContext to save user data
       login(data);
 
       // Redirect based on role
-      if (data.user.role === 'teacher') {
+      if (data.user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (data.user.role === 'teacher') {
         navigate('/teacher-dashboard');
       } else {
         navigate('/student-dashboard');
@@ -61,7 +62,7 @@ const LoginPage = () => {
               checked={role === 'student'}
               onChange={() => setRole('student')}
             />
-            Student
+            <span>Student</span>
           </label>
           <label>
             <input
@@ -70,7 +71,17 @@ const LoginPage = () => {
               checked={role === 'teacher'}
               onChange={() => setRole('teacher')}
             />
-            Teacher
+            <span>Teacher</span>
+          </label>
+          {/* Admin Option Added Here */}
+          <label>
+            <input
+              type="radio"
+              value="admin"
+              checked={role === 'admin'}
+              onChange={() => setRole('admin')}
+            />
+            <span>Admin</span>
           </label>
         </div>
 
