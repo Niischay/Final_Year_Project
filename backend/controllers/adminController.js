@@ -45,3 +45,33 @@ exports.addUser = async (req, res) => {
     res.status(500).json({ message: "Server error adding user" });
   }
 };
+
+// @desc    Upload face embedding for a student
+// @route   POST /api/admin/upload-face
+// @access  Private/Admin
+exports.uploadFaceData = async (req, res) => {
+  try {
+    const { registerNumber, faceEncoding } = req.body;
+
+    if (!registerNumber || !faceEncoding) {
+      return res.status(400).json({ message: "Register number and face data are required" });
+    }
+
+    // Find the student
+    const student = await User.findOne({ registerNumber, role: 'student' });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Update their face encoding
+    student.faceEncoding = faceEncoding;
+    await student.save();
+
+    res.status(200).json({ message: "Face data updated successfully" });
+
+  } catch (error) {
+    console.error("❌ Upload Face Error:", error);
+    res.status(500).json({ message: "Server error updating face data" });
+  }
+};

@@ -9,3 +9,12 @@ export const addUser = async (userData) => {
     throw new Error(error.response?.data?.message || 'Failed to add user');
   }
 };
+
+export const uploadFaceData = async (data) => {
+  try {
+    const response = await api.post('/admin/upload-face', data);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Failed to upload face data');
+  }
+};

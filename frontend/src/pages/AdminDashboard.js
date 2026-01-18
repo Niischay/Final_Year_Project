@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { addUser } from '../api/adminService';
+import FaceUpload from '../components/admin/FaceUpload';
 import '../App.css'; // Using existing styles
 
 const AdminDashboard = () => {
@@ -122,6 +123,7 @@ const AdminDashboard = () => {
           </button>
         </form>
       </div>
+      <FaceUpload />
     </div>
   );
 };
