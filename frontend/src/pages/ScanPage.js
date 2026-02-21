@@ -7,16 +7,21 @@ import LoadingSpinner from '../components/common/LoadingSpinner';
 import './ScanPage.css';
 
 const ScanPage = () => {
-  // Steps: 'qr' -> 'face' -> 'submitting'
+  // Steps: 'qr' -> 'location' (hidden step) -> 'face' -> 'submitting'
   const [step, setStep] = useState('qr'); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [locationCoords, setLocationCoords] = useState(null);
 
   const videoRef = useRef(null);
   const navigate = useNavigate();
+  
+  // FIX: Ref to prevent double-firing of QR success
+  // This persists across renders and updates immediately
+  const processingRef = useRef(false);
 
   // 1. Load Face Models on Mount
   useEffect(() => {
@@ -38,25 +43,76 @@ const ScanPage = () => {
     loadModels();
   }, []);
 
-  // 2. Handle QR Scan Success
+  // 2. Handle QR Scan Success -> THEN Get Location
   const handleQrSuccess = (decodedText) => {
-    if (step !== 'qr') return;
+    // FIX: Check if we are already processing a scan
+    if (step !== 'qr' || processingRef.current) return;
 
     try {
       const qrData = JSON.parse(decodedText);
       if (!qrData.sessionId) throw new Error("Invalid QR data");
       
+      // LOCK: Prevent further scans immediately
+      processingRef.current = true;
+
       setSessionId(qrData.sessionId);
-      setStep('face'); // Move to Face Verification Step
-      setMessage("QR Scanned! Please look at the camera for verification.");
+      
+      // Stop QR scanner UI
+      setLoading(true); 
+      setMessage("QR Scanned! Fetching Location...");
+      setIsError(false);
+
+      // Immediately fetch location
+      fetchLocation();
+
     } catch (e) {
       setMessage('Invalid QR Code. Try again.');
       setIsError(true);
+      setLoading(false);
+      // Reset lock on failure so they can try again
+      processingRef.current = false;
     }
   };
 
   const handleQrFailure = (err) => {
-    console.warn(err);
+    // console.warn(err); 
+  };
+
+  // 2.5 Fetch Location Helper
+  const fetchLocation = () => {
+    if (!navigator.geolocation) {
+      setMessage('Geolocation not supported by this browser.');
+      setIsError(true);
+      setLoading(false);
+      return;
+    }
+
+    setMessage("Acquiring Location...");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        setLocationCoords(coords);
+        
+        setMessage("Location Verified! Switching to Face Camera...");
+
+        // Delay to allow QR camera to fully release before Face camera starts
+        setTimeout(() => {
+          setLoading(false);
+          setStep('face'); 
+        }, 2000); 
+      },
+      (err) => {
+        console.error(err);
+        setMessage("Location permission denied. Cannot proceed.");
+        setIsError(true);
+        setLoading(false);
+        // Do NOT reset processingRef here, force reload/reset manually if needed
+      }
+    );
   };
 
   // 3. Handle Face Detection (Runs when step === 'face')
@@ -82,7 +138,6 @@ const ScanPage = () => {
       });
   };
 
-  // Constant loop to check for face
   const handleVideoPlay = () => {
     const interval = setInterval(async () => {
       if (step !== 'face' || !videoRef.current) {
@@ -98,66 +153,52 @@ const ScanPage = () => {
         if (detection) {
           clearInterval(interval);
           
-          // Stop video stream
           const stream = videoRef.current.srcObject;
-          const tracks = stream.getTracks();
-          tracks.forEach(track => track.stop());
+          if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+          }
 
-          // Proceed to submission
           handleAttendanceSubmission(detection.descriptor);
         }
       } catch (err) {
         console.error("Face detection error:", err);
       }
-    }, 1000); // Check every second
+    }, 1000);
   };
 
   // 4. Submit to Backend
   const handleAttendanceSubmission = async (faceDescriptor) => {
     setStep('submitting');
     setLoading(true);
-    setMessage('Verifying Face & Location...');
+    setMessage('Verifying Identity...');
 
-    if (!navigator.geolocation) {
-      setMessage('Geolocation not supported.');
+    if (!locationCoords) {
+      setMessage("Error: Location not found. Please rescan.");
       setIsError(true);
       setLoading(false);
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const location = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
+    try {
+      const descriptorArray = Array.from(faceDescriptor);
 
-        try {
-          // Convert Float32Array to regular Array for JSON
-          const descriptorArray = Array.from(faceDescriptor);
+      const result = await markAttendance({
+        sessionId,
+        location: locationCoords,
+        faceDescriptor: descriptorArray
+      });
 
-          const result = await markAttendance({
-            sessionId,
-            location,
-            faceDescriptor: descriptorArray
-          });
+      setMessage(result.message || "Attendance Marked Successfully!");
+      setIsError(false);
+      
+      setTimeout(() => navigate('/student-dashboard'), 3000);
 
-          setMessage(result.message);
-          setIsError(false);
-        } catch (err) {
-          setMessage(err.message || "Attendance failed");
-          setIsError(true);
-        } finally {
-          setLoading(false);
-          setTimeout(() => navigate('/student-dashboard'), 3000);
-        }
-      },
-      (err) => {
-        setMessage("Location permission denied.");
-        setIsError(true);
-        setLoading(false);
-      }
-    );
+    } catch (err) {
+      setMessage(err.message || "Attendance failed");
+      setIsError(true);
+      setLoading(false);
+    }
   };
 
   return (
@@ -189,7 +230,7 @@ const ScanPage = () => {
       )}
 
       {/* Step 2: Face Verification */}
-      {step === 'face' && (
+      {step === 'face' && !loading && (
         <div className="face-verify-container">
           <p className="instruction-text">Step 2: verifying Identity...</p>
           <div className="video-wrapper">
