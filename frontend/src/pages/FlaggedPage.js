@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 // Import the new function
 import { getFlaggedAttendance, approveFlaggedAttendance } from '../api/attendanceService';
+import { API_BASE_URL } from '../api/apiConfig';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import './FlaggedPage.css';
 
@@ -14,7 +15,7 @@ const FlaggedPage = () => {
   // New state to show messages (e.g., "Student approved")
   const [message, setMessage] = useState('');
 
-  const API_BASE_URL = 'http://localhost:5000/api';
+  
   const exportUrl = `${API_BASE_URL}/attendance/export/${sessionId}`;
 
   // Fetch data on load
