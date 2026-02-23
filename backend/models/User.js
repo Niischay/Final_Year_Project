@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   role: {
     type: String,
-    enum: ['student', 'teacher'],
+    enum: ['student', 'teacher', 'admin'],
     required: true,
   },
   registerNumber: {
@@ -21,11 +21,18 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: function () {
-      return this.role === 'teacher';
+      return this.role === 'teacher' || this.role === 'admin';
     },
     unique: true,
     sparse: true,
   },
+  // --- NEW FIELD START ---
+  studentClass: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Class',
+    default: null // Optional for now, to prevent errors with existing users
+  },
+  // --- NEW FIELD END ---
   registeredLocation: {
     latitude: Number,
     longitude: Number,

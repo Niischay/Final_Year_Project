@@ -42,6 +42,10 @@ const attendanceSchema = new mongoose.Schema({
   flagged: {
     type: Boolean,
     default: false,
+  },
+  isAbsent: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 

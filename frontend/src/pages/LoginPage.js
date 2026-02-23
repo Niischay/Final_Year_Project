@@ -35,7 +35,9 @@ const LoginPage = () => {
       login(data);
 
       // Redirect based on role
-      if (data.user.role === 'teacher') {
+      if (data.user.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (data.user.role === 'teacher') {
         navigate('/teacher-dashboard');
       } else {
         navigate('/student-dashboard');
@@ -61,7 +63,7 @@ const LoginPage = () => {
               checked={role === 'student'}
               onChange={() => setRole('student')}
             />
-            Student
+            <span>Student</span>
           </label>
           <label>
             <input
@@ -70,7 +72,16 @@ const LoginPage = () => {
               checked={role === 'teacher'}
               onChange={() => setRole('teacher')}
             />
-            Teacher
+            <span>Teacher</span>
+          </label>
+          <label>
+            <input
+              type="radio"
+              value="admin"
+              checked={role === 'admin'}
+              onChange={() => setRole('admin')}
+            />
+            <span>Admin</span>
           </label>
         </div>
 
