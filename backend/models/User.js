@@ -26,6 +26,13 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true,
   },
+  // --- NEW FIELD START ---
+  studentClass: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Class',
+    default: null // Optional for now, to prevent errors with existing users
+  },
+  // --- NEW FIELD END ---
   registeredLocation: {
     latitude: Number,
     longitude: Number,
