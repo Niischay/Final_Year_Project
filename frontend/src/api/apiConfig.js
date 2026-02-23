@@ -1,29 +1,39 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+// Ensure this is exported so other files can use it
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
 });
 
-// === Add this interceptor ===
-// This function will run before every request
+// === Request Interceptor ===
 api.interceptors.request.use(
   (config) => {
-    // Get the token from localStorage
-    const token = localStorage.getItem('token');
+    // 1. Try to get token from "user" object (Most likely scenario)
+    const userStr = localStorage.getItem('user');
+    let token = null;
     
-    // If the token exists, add it to the Authorization header
+    if (userStr) {
+        const user = JSON.parse(userStr);
+        token = user.token; 
+    }
+
+    // 2. Fallback: Try to get token directly (If stored as just 'token')
+    if (!token) {
+        token = localStorage.getItem('token');
+    }
+
+    // 3. Attach to header
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
-    // Handle request errors
     return Promise.reject(error);
   }
 );
-// ============================
 
 export default api;

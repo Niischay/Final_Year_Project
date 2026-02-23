@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./db");
+const adminRoutes = require('./routes/adminRoutes');
 
 dotenv.config();
 const app = express();
@@ -20,11 +21,14 @@ app.get("/", (req, res) => {
 const authRoutes = require('./routes/authRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const qrRoutes = require('./routes/qrRoutes');
+const classRoutes = require('./routes/classRoutes');
 
 // Route Mounting
 app.use('/api/auth', authRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/qr', qrRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/classes', classRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
